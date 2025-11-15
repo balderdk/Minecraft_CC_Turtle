@@ -1,0 +1,28 @@
+os.loadAPI("m")
+
+print("blocks of lava to get? #")
+distance = tonumber(read())
+
+print("Offset #")
+offset = tonumber(read())
+
+function lavaRun(distance)
+  for i = 1, distance do
+    m.forward()
+    turtle.placeDown()
+    turtle.refuel()
+  end
+end
+
+for i = 0, offset do
+  m.forward()
+end
+
+turtle.placeDown()
+turtle.refuel()
+lavaRun(distance)
+m.right()
+lavaRun(1)
+m.right()
+lavaRun(distance)
+m.goto(0,0,0)
