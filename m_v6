@@ -1,0 +1,256 @@
+cX = 0
+cY = 0
+cZ = 0
+cD = 0
+
+startSlot = 1
+endSlot = 15
+
+travelMode = false
+
+skipFuelPickUp = false
+dropDirection = "back"
+
+function skipFuel()
+	skipFuelPickUp = true
+end
+
+function setDropDirection(ddir)
+	dropDirection = ddir
+end
+
+function forward()
+
+  cf()
+  
+  if travelMode == false then
+    checkInventory()
+  end  
+  
+  while not turtle.forward() do
+    turtle.dig()
+	turtle.attack()
+    sleep(0.54)
+  end  
+  
+  if cD == 0 then
+    cX = cX + 1  
+  elseif cD == 1 then
+    cZ = cZ + 1
+  elseif cD == 2 then
+    cX = cX - 1
+  else
+    cZ = cZ - 1
+  end
+end
+
+function back()
+
+  cf()
+
+  if travelMode == false then
+    checkInventory()
+  end
+
+  while not turtle.back() do
+    turtle.turnLeft()
+    turtle.turnLeft()
+    turtle.dig()
+	turtle.attack()
+    turtle.turnRight()
+    turtle.turnRight()
+  end
+  
+  if cD == 0 then
+    cX = cX - 1
+  elseif cD == 1 then
+    cZ = cZ - 1
+  elseif cD == 2 then
+    cX = cX + 1
+  else
+    cZ = cZ + 1
+  end
+end
+
+function left()
+  if turtle.turnLeft() then
+    --save direction change
+    cD = (cD - 1) % 4
+  end
+end
+
+function right()
+  if turtle.turnRight() then
+    cD = (cD + 1) % 4
+  end
+end
+
+function up()
+  
+  cf()
+  
+  if travelMode == false then
+    checkInventory()
+  end
+
+  while not turtle.up() do
+    turtle.digUp()
+	turtle.attackUp()
+    sleep(0.54) 
+  end
+  cY = cY + 1
+end
+
+function down()
+  
+  cf()
+  
+  if travelMode == false then
+    checkInventory()
+  end
+
+  while not turtle.down() do
+    turtle.digDown()
+	turtle.attackDown()
+  end
+  cY = cY - 1
+end  
+
+function goto(x, y, z)
+  tmpTravelMode = travelMode  
+  travelMode = true
+  
+  --y coord start
+  if not (cY == y) then
+    if cY < y then
+      while not (cY == y) do
+        up()
+      end
+    else
+      while not (cY == y) do
+        down()
+      end
+    end
+  end
+  --ycoord end
+  
+  --zcoord start
+  if not (cZ == z) then
+    if cZ < z then
+      turnToDir(1)
+    else
+      turnToDir(3)
+    end
+    
+    while not (cZ == z) do
+      forward()
+    end
+  end  
+  --zcoord end
+  
+  --xcoord start
+  if not (cX == x) then
+    if cX < x then
+      turnToDir(0)
+    else
+      turnToDir(2)
+    end
+    
+    while not (cX == x) do
+      forward()
+    end
+  end
+  --xcoord end
+  
+  travelMode = tmpTravelMode
+end
+
+function turnToDir(dD)
+  while not (cD == dD) do
+    if (cD + 1) % 4 == dD then
+      right()
+    else
+      left()
+    end
+  end
+end
+
+function cf()
+  if turtle.getFuelLevel() < 100 then
+    turtle.select(16)
+    while not turtle.refuel(1) do
+      print("Turtle has run out of fuel, please resupply and press enter")
+      read()
+    end
+    turtle.select(1)
+  end
+end
+
+function setCargoRange(s_index, e_index)
+	startSlot = s_index
+	endSlot = e_index
+end
+
+function checkInventory()
+  if turtle.getItemCount(endSlot) > 0 then
+    tX = cX
+    tY = cY
+    tZ = cZ
+    tD = cD
+    
+    --go to zero zero
+    goto(0,0,0)
+
+    --Make sure we face the chest
+    turnToDir(2)
+    
+    --Try to get fuel first
+	if skipFuelPickUp == false then
+		turtle.select(16)
+		turtle.suckDown()
+	end
+    
+    --Now clean inventory
+    ci()
+  
+    --go back to prew location
+    goto(tX, cY, cZ)
+    goto(tX, cY, tZ)
+    goto(tX, tY, tZ)
+  
+    --face the correct way
+    turnToDir(tD)
+  end
+end
+
+function ci()
+	for i = startSlot, endSlot do
+		if turtle.getItemCount(i) > 0 then
+			turtle.select(i)
+			if dropDirection == "back" then
+				while not turtle.drop() do
+					print("Inventory is full, please make room, press Enter to continue")
+					read()
+				end
+			elseif dropDirection == "bottom" then
+				while not turtle.dropDown() do
+					print("Inventory is full, please make room, press Enter to continue")
+					read()
+				end
+			end
+		end
+	end
+	turtle.select(1)
+end
+
+function getX()
+  return cX
+end
+
+function getY()
+  return cY
+end
+
+function getZ()
+  return cZ
+end
