@@ -1,0 +1,93 @@
+-- Load Robust Turtle API as "t"
+os.loadAPI("t")
+
+-- ======== CONFIG ========
+local MAX_FUEL = 100000
+local BUCKET_SLOT = 1
+-- =========================
+
+-----------------------------
+-- Utility functions
+-----------------------------
+local function refuelFromBucket()
+    turtle.select(BUCKET_SLOT)
+
+    -- Try placing bucket downward into lava
+    local placed = turtle.placeDown()
+    if not placed then
+        return false
+    end
+
+    -- Turn lava bucket into fuel
+    if turtle.refuel(1) then
+        print("Refueled! Fuel: " .. turtle.getFuelLevel())
+        return true
+    else
+        print("Failed to refuel (no lava?)")
+        return false
+    end
+end
+
+local function checkFuelStop()
+    if turtle.getFuelLevel() >= MAX_FUEL then
+        print("Fuel topped at " .. turtle.getFuelLevel())
+        print("Returning to start...")
+        t.goHome()
+        exit()
+    end
+end
+
+-----------------------------
+-- Row processing
+-----------------------------
+local function processRow(length)
+    for i = 1, length do
+        -- Try to refuel at each step
+        refuelFromBucket()
+        checkFuelStop()
+
+        -- Move forward using robust movement
+        t.forward()
+    end
+end
+
+-----------------------------
+-- Program start
+-----------------------------
+
+local args = { ... }
+if #args < 2 then
+    print("Usage: lavarefuel <length> <width>")
+    return
+end
+
+local length = tonumber(args[1])
+local width = tonumber(args[2])
+
+print("Starting lava-refuel patrol: " .. length .. " x " .. width)
+
+t.setHome()  -- remember start location
+
+local turnRight = true
+
+for w = 1, width do
+    processRow(length)
+
+    if w < width then
+        if turnRight then
+            t.turnRight()
+            t.forward()
+            t.turnRight()
+        else
+            t.turnLeft()
+            t.forward()
+            t.turnLeft()
+        end
+
+        turnRight = not turnRight
+    end
+end
+
+print("Finished area. Returning home...")
+t.goHome()
+print("Done!")
