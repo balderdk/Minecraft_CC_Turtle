@@ -1,0 +1,90 @@
+os.loadAPI("m")
+
+function quarry(rows, colums, depth, offsetX, offsetY, offsetZ)
+  m.travelMode = false
+  
+  m.goto(offsetX, 0, 0)
+  m.goto(offsetX, 0, offsetZ)
+  m.goto(offsetX, offsetY, offsetZ)
+  --face direction zero
+  m.turnToDir(0)
+  
+  bump = false
+  
+  d = 1
+  while d <= depth do
+    for row = 1, rows do
+      for col = 2, colums do
+        if not (d == depth) then
+          turtle.digDown()
+        end
+        m.forward()
+      end
+      
+      --change row lane
+      if not (row == rows) then
+        if bump then
+          m.left()
+          if not (d == depth) then
+            turtle.digDown()
+          end
+          m.forward()
+          m.left()
+        else
+          m.right()
+          if not (d == depth) then
+            turtle.digDown()
+          end
+          m.forward()
+          m.right()
+        end
+        bump = not bump
+      else
+        m.left()
+        m.left()
+      end
+    end
+    
+    d = d + 2
+    
+    if not (d > depth) then
+      m.down()
+      m.down()
+    end
+  end
+  
+  m.goto(m.cX, 0, m.cZ)
+  m.goto(m.cX, 0, 0)
+  m.goto(0, 0, 0)
+
+  --Make sure we face the chest
+  m.turnToDir(2)
+
+  m.ci()
+  m.left()
+  m.left()  
+end
+
+  print("Specify length #")
+  colums = tonumber(read())
+  
+  print("Specify width #")
+  rows = tonumber(read())
+  
+  print("Specify depth #")
+  depth = tonumber(read())
+  
+  print("Specify X-offset #")
+  offsetX = tonumber(read())
+  
+  print("Specify Y-offset #")
+  offsetY = tonumber(read())
+  
+  print("Specify Z-offset #")
+  offsetZ = tonumber(read())
+  
+  print("Quarry started")
+  
+  quarry(rows, colums, depth, offsetX, offsetY, offsetZ)
+  
+  print("Quarry finished")
