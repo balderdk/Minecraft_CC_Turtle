@@ -1,0 +1,82 @@
+os.loadAPI("m")
+
+--Torches go in slot 15 so limit cargo to slot 14
+m.setCargoRange(1, 14)
+
+function makeTunnel(tunnels, length, spacing)
+  m.forward()
+  
+  m.right()
+  
+  tmpX = m.getX()
+  tmpZ = m.getZ()
+  
+  singleTunnel(length)
+  m.left()
+  m.left()
+  
+  --when starting out go right then left, then start to cycle
+  
+  bump = false
+  for tun = 1, tunnels do
+    singleTunnel((length * 2) + 1)  
+    
+    if (tun < tunnels) then    
+    if bump then
+      m.left()
+      for i = 0, spacing do
+        m.forward()
+        while turtle.detectUp() do
+          turtle.digUp()
+          sleep(0.54)
+        end
+      end
+      m.left()
+    else
+      m.right()
+      for i = 0, spacing do
+        m.forward()
+        while turtle.detectUp() do
+          turtle.digUp()
+          sleep(0.54)
+        end
+        turtle.digDown()
+      end
+      m.right()
+    end
+    end
+    bump = not bump
+  end
+  
+  m.goto(0,0,0)
+
+end
+
+function singleTunnel(length)
+  count = 0
+  for i = 0, length do
+    m.forward()
+    while turtle.detectUp() do
+      turtle.digUp()
+      sleep(0.54)
+    end
+    turtle.digDown()
+    count = count + 1
+    if count == 4 then
+      turtle.select(15)
+      turtle.placeDown()
+      turtle.select(1)
+      count = -4
+    end
+  end
+end
+
+
+
+print("Number of tunnels #")
+tunnels = tonumber(read())
+
+print("Length of tunnels #")
+length = tonumber(read())
+
+makeTunnel(tunnels, length, 3)
