@@ -1,14 +1,25 @@
 -- stair_miner.lua
--- Requires m_v6 API as m
--- Digs a 2-wide stair, 4 blocks long per layer, descending 1 block each layer.
--- Returns to start using m.goto(0,0,0) when finished.
-
-local m = m
-local L = 4   -- length per layer
+-- Self-contained: loads m_v6 API and digs a 2x4 stair 60 layers deep, then returns home.
 
 -------------------------------------------------------
--- Dig a single 2-wide × 4-long layer.
--- Turtle ends exactly where it started horizontally.
+-- Load the API
+-------------------------------------------------------
+if not fs.exists("m") then
+    error("Missing API file 'm'!")
+end
+
+os.loadAPI("m_v6")
+local m = m_v6
+
+-------------------------------------------------------
+-- Config
+-------------------------------------------------------
+local L = 4                -- length per layer
+local MAX_DEPTH = 60       -- number of layers to dig down
+
+-------------------------------------------------------
+-- Dig a 2-wide × 4-long layer.
+-- Turtle ends in the same horizontal place it began.
 -------------------------------------------------------
 
 local function digLayer()
@@ -23,14 +34,14 @@ local function digLayer()
     end
 
     -------------------------
-    -- Shift to lane 2
+    -- Move to lane 2
     -------------------------
     m.right()
     m.forward()
     m.right()
 
     -------------------------
-    -- Lane 2 (backward)
+    -- Lane 2 (reverse)
     -------------------------
     for i = 1, L do
         m.forward()
@@ -39,7 +50,7 @@ local function digLayer()
     end
 
     -------------------------
-    -- Return to lane 1 start
+    -- Return to lane 1 position
     -------------------------
     m.right()
     m.forward()
@@ -53,23 +64,11 @@ end
 local function digStair()
     print("Starting stair miner...")
 
-    while true do
+    for depth = 1, MAX_DEPTH do
+        print("Layer " .. depth .. " / " .. MAX_DEPTH)
 
         ---------------------------------------------------
-        -- Check if block below is diggable
-        ---------------------------------------------------
-        if not turtle.detectDown() then
-            print("Open space or void under me. Stopping.")
-            break
-        end
-
-        if not turtle.digDown() then
-            print("Hit bedrock or undiggable block. Finished digging.")
-            break
-        end
-
-        ---------------------------------------------------
-        -- Dig layer
+        -- Dig the layer
         ---------------------------------------------------
         digLayer()
 
@@ -79,13 +78,18 @@ local function digStair()
         m.forward()
 
         ---------------------------------------------------
-        -- Move down 1 block
+        -- Dig down if something is there
+        ---------------------------------------------------
+        turtle.digDown()
+
+        ---------------------------------------------------
+        -- Move down (even into open space)
         ---------------------------------------------------
         m.down()
     end
 
     -------------------------------------------------------
-    -- All done: return to start using API coordinates
+    -- Finished: return home
     -------------------------------------------------------
     print("Returning to start...")
     m.goto(0,0,0)
