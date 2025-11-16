@@ -1,0 +1,96 @@
+-- stair_miner.lua
+-- Requires m_v6 API as m
+-- Digs a 2-wide stair, 4 blocks long per layer, descending 1 block each layer.
+-- Returns to start using m.goto(0,0,0) when finished.
+
+local m = m
+local L = 4   -- length per layer
+
+-------------------------------------------------------
+-- Dig a single 2-wide × 4-long layer.
+-- Turtle ends exactly where it started horizontally.
+-------------------------------------------------------
+
+local function digLayer()
+
+    -------------------------
+    -- Lane 1 (forward)
+    -------------------------
+    for i = 1, L do
+        m.forward()
+        turtle.digUp()
+        turtle.digDown()
+    end
+
+    -------------------------
+    -- Shift to lane 2
+    -------------------------
+    m.right()
+    m.forward()
+    m.right()
+
+    -------------------------
+    -- Lane 2 (backward)
+    -------------------------
+    for i = 1, L do
+        m.forward()
+        turtle.digUp()
+        turtle.digDown()
+    end
+
+    -------------------------
+    -- Return to lane 1 start
+    -------------------------
+    m.right()
+    m.forward()
+    m.left()
+end
+
+-------------------------------------------------------
+-- Main stair miner
+-------------------------------------------------------
+
+local function digStair()
+    print("Starting stair miner...")
+
+    while true do
+
+        ---------------------------------------------------
+        -- Check if block below is diggable
+        ---------------------------------------------------
+        if not turtle.detectDown() then
+            print("Open space or void under me. Stopping.")
+            break
+        end
+
+        if not turtle.digDown() then
+            print("Hit bedrock or undiggable block. Finished digging.")
+            break
+        end
+
+        ---------------------------------------------------
+        -- Dig layer
+        ---------------------------------------------------
+        digLayer()
+
+        ---------------------------------------------------
+        -- Move 1 block forward
+        ---------------------------------------------------
+        m.forward()
+
+        ---------------------------------------------------
+        -- Move down 1 block
+        ---------------------------------------------------
+        m.down()
+    end
+
+    -------------------------------------------------------
+    -- All done: return to start using API coordinates
+    -------------------------------------------------------
+    print("Returning to start...")
+    m.goto(0,0,0)
+
+    print("Stair miner complete and returned home.")
+end
+
+digStair()
