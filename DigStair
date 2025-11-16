@@ -8,7 +8,7 @@ if not fs.exists("m") then
     error("Missing API file 'm'!")
 end
 
-os.loadAPI("m_v6")
+os.loadAPI("m")
 local m = m_v6
 
 -------------------------------------------------------
