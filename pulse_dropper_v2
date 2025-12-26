@@ -1,0 +1,60 @@
+-- CONFIGURATION
+local inputSide = "left"   -- redstone input side
+local dropSide = "down"    -- drop direction (must be "down")
+local slotsToDrop = 2      -- ALL slots must have items
+
+-- INTERNAL STATE
+local lastInputState = false
+
+print("Item drop controller started")
+print("Waiting for redstone signal on " .. inputSide)
+print("--------------------------------")
+
+while true do
+    local currentInputState = redstone.getInput(inputSide)
+
+    -- Log input state changes
+    if currentInputState ~= lastInputState then
+        print("Input changed: " .. (currentInputState and "ON" or "OFF"))
+    end
+
+    -- Detect rising edge (OFF -> ON)
+    if currentInputState and not lastInputState then
+        -- Check if ALL slots have items
+        local allSlotsFilled = true
+
+        for slot = 1, slotsToDrop do
+            if turtle.getItemCount(slot) == 0 then
+                allSlotsFilled = false
+                break
+            end
+        end
+
+        if allSlotsFilled then
+            print("Signal detected and all slots filled! Dropping items...")
+
+            for slot = 1, slotsToDrop do
+                turtle.select(slot)
+                print("Slot " .. slot .. ": dropping 1 item")
+                turtle.dropDown(1)
+            end
+
+            print("Drop sequence complete")
+            print("Waiting for signal to turn OFF before retriggering")
+            print("--------------------------------")
+
+            -- 🔹 ONLY mark input as handled if drop succeeded
+            lastInputState = true
+        else
+            -- Do NOT update lastInputState → will retry while ON
+            print("Signal detected but not all slots filled — retrying")
+        end
+    end
+
+    -- Normal OFF tracking
+    if not currentInputState then
+        lastInputState = false
+    end
+
+    sleep(1.0)
+end
