@@ -46,3 +46,4 @@ while true do
     lastInputState = currentInputState
     sleep(1.0)
 end
+
