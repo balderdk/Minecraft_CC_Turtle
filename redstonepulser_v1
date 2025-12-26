@@ -1,0 +1,31 @@
+-- CONFIGURATION
+local inputSide = "right"     -- side receiving the redstone signal
+local outputSide = "left"     -- side that will pulse
+local pulseCount = 4
+local pulseInterval = 1       -- seconds between pulses
+local pulseLength = 0.2       -- how long each pulse stays ON
+
+-- INTERNAL STATE
+local lastInputState = false
+
+while true do
+    local currentInputState = redstone.getInput(inputSide)
+
+    -- Detect rising edge (OFF -> ON)
+    if currentInputState and not lastInputState then
+        -- Send pulses
+        for i = 1, pulseCount do
+            redstone.setOutput(outputSide, true)
+            sleep(pulseLength)
+            redstone.setOutput(outputSide, false)
+
+            -- Wait between pulses (except after last one)
+            if i < pulseCount then
+                sleep(pulseInterval)
+            end
+        end
+    end
+
+    lastInputState = currentInputState
+    sleep(0.05) -- small delay to reduce CPU usage
+end
