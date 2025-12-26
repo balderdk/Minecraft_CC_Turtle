@@ -8,24 +8,41 @@ local pulseLength = 0.2       -- how long each pulse stays ON
 -- INTERNAL STATE
 local lastInputState = false
 
+print("Pulse controller started")
+print("Waiting for redstone signal on " .. inputSide)
+print("-----------------------------")
+
 while true do
     local currentInputState = redstone.getInput(inputSide)
 
+    -- Print state changes
+    if currentInputState ~= lastInputState then
+        print("Input changed: " .. (currentInputState and "ON" or "OFF"))
+    end
+
     -- Detect rising edge (OFF -> ON)
     if currentInputState and not lastInputState then
-        -- Send pulses
+        print("Signal detected! Sending pulses...")
+
         for i = 1, pulseCount do
+            print("Pulse " .. i .. " ON")
             redstone.setOutput(outputSide, true)
             sleep(pulseLength)
+
+            print("Pulse " .. i .. " OFF")
             redstone.setOutput(outputSide, false)
 
-            -- Wait between pulses (except after last one)
             if i < pulseCount then
+                print("Waiting " .. pulseInterval .. " seconds...")
                 sleep(pulseInterval)
             end
         end
+
+        print("Pulse sequence complete")
+        print("Waiting for signal to turn OFF before retriggering")
+        print("-----------------------------")
     end
 
     lastInputState = currentInputState
-    sleep(0.05) -- small delay to reduce CPU usage
+    sleep(1.0)
 end
